@@ -64,7 +64,7 @@ async function deploy() {
 
   console.log("start deploying...")
 
-  const [abi, bytecode] = await get_abi_bytecode("mockSnerio.sol", "FreeMint")
+  const [abi, bytecode] = await get_abi_bytecode("test.sol", "Test")
   console.log(abi)
   console.log(bytecode)
   var provider = new ethers.JsonRpcProvider("http://localhost:8545")
@@ -72,29 +72,24 @@ async function deploy() {
   var deployer_private_key =
     "0x72feed5232dfd10b32ad570f80d5ead1b7a402aa4bc85d0015baeb48b2f64928"
 
-  // tx: Making sure FreeMint has 10 ether.
-  var sendValue = ethers.parseEther("10") // 10 ether
-  var tx = {
-    value: sendValue,
-    gas: 100000
-  }
-
   var wallet = new ethers.Wallet(deployer_private_key, provider)
   var Balance = await provider.getBalance(wallet.address)
   console.log("Balance of deployer is :", Balance)
 
   // deployg
-  var FreeMintFactory = new ethers.ContractFactory(abi, bytecode, wallet)
+  var TestFactory = new ethers.ContractFactory(abi, bytecode, wallet)
 
-  var FreeMint = await FreeMintFactory.connect(wallet).deploy(tx)
-  await FreeMint.waitForDeployment();
+  var TestContract = await TestFactory.connect(wallet).deploy()
+  await TestContract.waitForDeployment();
 
-  console.log("FreeMint contract deployed at address:", FreeMint.target)
-  console.log("FreeMint contract balance :", await provider.getBalance(FreeMint.target))
+  console.log("TestContract contract deployed at address:", TestContract.target)
+  console.log("TestContract contract balance :", await provider.getBalance(TestContract.target))
 }
 
 async function main() {
-  await deploy();
+  for (i = 0; i < 15; i++) {
+    await deploy();
+  }
 }
 
 main()

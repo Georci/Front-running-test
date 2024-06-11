@@ -34,22 +34,24 @@ const abi = [
         "type": "receive"
     }
 ];
+
+// 这些合约用来在攻击交易之前发送交易，使得memorypool中的交易数量达到一个正常水准，模拟memorypool正常情况。
 const contractAddressArray = [
-    "0x6F99F48b4dCdD76dd6BA55498FCE490b4E3c637A",
-    "0xaFA1Ee1C2A1603ccFF055a685279E760b737B065",
-    "0x87DEe0fC3e305CFC0F6E39621D336217f9098218",
-    "0x0fDFD86A29f6759Cb8c3967c0D9cE616591547c4",
-    "0x847836DD1982F314F0FD105750BfCD7f9Ef3c309",
-    "0xabc59536257E2407750DCEd7AC5BA537dD04E4f5",
-    "0x9942950a498ca65A3876Da8020bf0D8e6EFa635C",
-    "0x0477521E8622760f59615e531566B6017f58FD23",
-    "0xeCbE01F8ADb31fF75987cA233B24A3BB070dD4Bd",
-    "0x9B87b1155C0daa7f40EAb5eFB962955e92240bEd",
-    "0xfcc8B6f01C89F2bAfd7350e7bf2fD3AE75eE4404",
-    "0x30782Fa31555179b4cBC1920aCD6a420C90788a6",
-    "0x1116C81e9362a4d2D6F545954cB797e1050E690E",
-    "0x49ED1535C4a70E8B72069f13bAd3bFF09D9C7917",
-    "0xfcc144915761380a746b60F2542C4Fb35820e002"
+    "0xC86cB91e13267BF47e6614A64B636e5583a878A1",
+    "0xD1e9A1a2Cd7ED9a9b2aD9D22098628A2562f25f2",
+    "0x0546f772855Fbf034bEE48D7c4be0eE0F1d527a2",
+    "0x801439Df67F7ebd2f9a81fafc89e702F5b2fFbE0",
+    "0x1D1F9f9a804b5B40c5CC9A9d0BB0A321A09E74cE",
+    "0x3a5B3CE3F482d8EE8041eca32c6C40FF02676F2f",
+    "0x2E4990004C56623a380E17B66ec36d50B43356a8",
+    "0x709427c5FE6d27dF75871712F0264e31322D4254",
+    "0xfdFA189E94f2E2233ff86eC0a3cF4f0345A6DA70",
+    "0x0A86116611Fa5F2BFF5Ce2BeF0274fC80C9A7464",
+    "0x6086D6a27786f063DD3afA18993BB5c12347A136",
+    "0x96B37b10Ab79248efEe3d01A589767bA22CA6BC1",
+    "0xef9FBc275aA0Ab88f70f7376d793095BDF175348",
+    "0x2dB4C937697d799B2eeA208C8f7c223196468016",
+    "0xA23B4e52b3E0563D59273064945F29B36ba61049"
 ]
 
 const testabi = [
@@ -74,11 +76,11 @@ const provider = new ethers.JsonRpcProvider(rpc)
 async function SendTx() {
 
 
-    const senderPK = "0xdbd0db8310c9d8b1da86f51316eaa991fb1e8fdbebe0ead1c95502d1c423d03b";
+    const senderPK = "0x72feed5232dfd10b32ad570f80d5ead1b7a402aa4bc85d0015baeb48b2f64928";
     const Sender_Wallet = new ethers.Wallet(senderPK, provider);
     console.log("sender's balance is :", await provider.getBalance(Sender_Wallet.address))
 
-
+    // 随机生成一些钱包，并往这些钱包中传入一些初始金额，保证其能够正常执行一些交易
     for (i = 0; i < 15; i++) {
         //随机数生成钱包
         let random = ethers.randomBytes(32)
@@ -124,13 +126,16 @@ async function main() {
     let promises = [];
 
     for (let i = 0; i < 15; i++) {
+        if (i == 13) {
+            console.log("You should start BackTruffic.js");
+        }
         let wallet_gan = wallets[i];
         let contractAddress = contractAddressArray[i];
         promises.push(executeTransaction(wallet_gan, contractAddress, testabi));
 
     }
 
-    // 使用 Promise.all() 并行执行所有交易
+    // 使用 Promise.all() 并发执行所有交易
     console.log("===================start excute all txs======================")
     Promise.all(promises)
         .then(results => {
